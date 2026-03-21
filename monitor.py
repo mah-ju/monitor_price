@@ -35,7 +35,9 @@ def run():
 
     with sync_playwright() as p:
 
-        browser = p.chromium.launch(headless=True)
+        browser = p.chromium.launch(
+            headless=True,
+            args=["--no-sandbox", "--disable-dev-shm-usage"])
         page = browser.new_page()
 
         # =====================
@@ -106,8 +108,10 @@ def run():
         if best_deals:
 
             for deal in best_deals:
+
                 key = f"{deal['room']}_{deal['checkin']}"
                 current_price = deal["price"]
+
                 if key not in sent:
                     should_send = True
                 else:
@@ -128,12 +132,16 @@ Total: R${deal["total_price"]}
 
                 print(message)
                 send_telegram(message)
+
                 new_sent[key] = current_price
                 sent_any = True
-                with open("state.json", "w") as f:
-                    json.dump({"sent": new_sent}, f) 
-                if not sent_any:
-                    send_telegram("🔎 Busca realizada.\nNenhuma oferta melhor encontrada.")
+
+        with open("state.json", "w") as f:
+            json.dump({"sent": new_sent}, f) 
+
+        if not sent_any:
+            print("Nenhuma oferta nova encontrada.")
+            send_telegram("🔎 Busca realizada.\nNenhuma oferta melhor encontrada.")
 
         browser.close()
 
