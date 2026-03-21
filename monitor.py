@@ -111,6 +111,9 @@ def run():
 
                 key = f"{deal['room']}_{deal['checkin']}"
                 current_price = deal["price"]
+                if current_price < 150:
+                    print("Ignorado (preço suspeito muito abaixo):")
+                    continue
 
                 if key not in sent:
                     should_send = True
