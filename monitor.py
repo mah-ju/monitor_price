@@ -10,7 +10,7 @@ import os
 
 def generate_checkin_dates():
     today = date.today()
-    days_ahead = 30
+    days_ahead = 40
     return [today + timedelta(days=i) for i in range(2, days_ahead)]
 
 
@@ -111,15 +111,13 @@ def run():
 
                 key = f"{deal['room']}_{deal['checkin']}"
                 current_price = deal["price"]
-                if current_price < 150:
+                if current_price < 130:
                     print("Ignorado (preço suspeito muito abaixo):")
                     continue
 
-                if key not in sent:
-                    should_send = True
-                else:
-                    old_price = sent[key]
-                    should_send = current_price < old_price 
+                old_price = sent.get(key)
+                should_send = old_price is None or current_price != old_price
+
                 if not should_send:
                     continue
 
@@ -144,7 +142,7 @@ Total: R${deal["total_price"]}
 
         if not sent_any:
             print("Nenhuma oferta nova encontrada.")
-            send_telegram("🔎 Busca realizada.\nNenhuma oferta melhor encontrada.")
+            send_telegram(f"🔎 Busca realizada.\nNenhuma diária abaixo de R${PRICE_LIMIT} encontrada.")
 
         browser.close()
 
