@@ -24,7 +24,7 @@ def get_airbnb_price(page, url):
             price = float(value)
 
             # 🔥 filtro essencial (ignora lixo tipo R$ 35, R$ 1, etc)
-            if price >= 200:
+            if price >= 80:
                 prices.append(price)
 
         except:

@@ -29,9 +29,8 @@ def run():
         with open("state.json", "r") as f:
             data = json.load(f)
             sent = data.get("sent", {})
+    best_deals = [] 
 
-    best_deals = []
-    best_price = None
 
     with sync_playwright() as p:
 
@@ -60,7 +59,11 @@ def run():
 
                 if price:
                     try:
-                        value = price.replace("R$", "").replace(".", "").replace(",", ".").strip()
+                        value = price.replace("R$", "").strip()
+                        if "," in value:
+                            value = value.replace(".", "").replace(",", ".")
+                        else:
+                            value = value
                         total_price = float(value)
 
                         if total_price < 200:
@@ -69,30 +72,20 @@ def run():
                             continue
 
                         price_per_night = total_price / STAY_NIGHTS
+                        print("👉 DEBUG TOTAL:", total_price)
+                        print("👉 DEBUG DIÁRIA:", price_per_night)
+                        print("👉 LIMITE:", PRICE_LIMIT)
 
                         if price_per_night <= PRICE_LIMIT:
 
-                            if best_price is None or price_per_night < best_price:
-                                best_price = price_per_night
-                                best_deals = [{
-                                    "source": "airbnb",
-                                    "room": room,
-                                    "checkin": checkin,
-                                    "price": round(price_per_night, 2),
-                                    "total_price": total_price,
-                                    "url": url
-                                }]
-
-                            elif price_per_night == best_price:
-                                best_deals.append({
-                                    "source": "airbnb",
-                                    "room": room,
-                                    "checkin": checkin,
-                                    "price": round(price_per_night, 2),
-                                    "total_price": total_price,
-                                    "url": url
-                                })
-
+                           best_deals.append({
+                               "source": "airbnb",
+                                "room": room,
+                                "checkin": checkin,
+                                "price": round(price_per_night, 2),
+                                "total_price": total_price,
+                                "url": url
+    })
                     except Exception as e:
                         print("Erro Airbnb:", e)
 
@@ -111,7 +104,7 @@ def run():
 
                 key = f"{deal['room']}_{deal['checkin']}"
                 current_price = deal["price"]
-                if current_price < 130:
+                if current_price < 80:
                     print("Ignorado (preço suspeito muito abaixo):")
                     continue
 
